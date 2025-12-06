@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Students - Admin Dashboard</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="navbar">
+            <a href="/admin" class="navbar-brand">
+                <i class="fas fa-graduation-cap"></i>
+                EduTrack - Admin
+            </a>
+            <ul class="navbar-nav">
+                <li><a href="/admin" class="nav-link"><i class="fas fa-home"></i>Dashboard</a></li>
+                <li><a href="/admin/users" class="nav-link"><i class="fas fa-users"></i>Users</a></li>
+                <li><a href="/admin/students" class="nav-link active"><i class="fas fa-user-graduate"></i>Students</a></li>
+                <li><a href="/admin/credentials" class="nav-link"><i class="fas fa-key"></i>Credentials</a></li>
+            </ul>
+            <a href="/logout" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>Logout
+            </a>
+        </nav>
+
+        <div class="main-content">
+            <div class="dashboard-header">
+                <h1>Manage Students</h1>
+                <p>Add, view, and remove students from the system</p>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'error' if category == 'error' else 'success' }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-user-plus"></i>Add New Student</h2>
+                </div>
+                <form method="POST" action="/admin/add_student" class="form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="student_id">
+                                <i class="fas fa-id-card"></i>
+                                Student ID
+                            </label>
+                            <input type="text" name="student_id" id="student_id" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">
+                                <i class="fas fa-user"></i>
+                                Full Name
+                            </label>
+                            <input type="text" name="name" id="name" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="grade">
+                                <i class="fas fa-graduation-cap"></i>
+                                Grade / Year
+                            </label>
+                            <select name="grade" id="grade" required>
+                                <option value="">Select</option>
+                                <option value="BTech 1st Year">BTech 1st Year</option>
+                                <option value="BTech 2nd Year">BTech 2nd Year</option>
+                                <option value="BTech 3rd Year">BTech 3rd Year</option>
+                                <option value="BTech 4th Year">BTech 4th Year</option>
+                                <option value="Degree 1st Year">Degree 1st Year</option>
+                                <option value="Degree 2nd Year">Degree 2nd Year</option>
+                                <option value="Degree 3rd Year">Degree 3rd Year</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                                <option value="10">10</option>
+                                <option value="11">11</option>
+                                <option value="12">12</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="section">
+                                <i class="fas fa-layer-group"></i>
+                                Section
+                            </label>
+                            <input type="text" name="section" id="section" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="parent_username">
+                                <i class="fas fa-users"></i>
+                                Parent Username
+                            </label>
+                            <input type="text" name="parent_username" id="parent_username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="teacher_id">
+                                <i class="fas fa-chalkboard-teacher"></i>
+                                Teacher
+                            </label>
+                            <select name="teacher_id" id="teacher_id" required>
+                                <option value="">Select Teacher</option>
+                                {% for teacher in teachers %}
+                                <option value="{{ teacher.id }}">{{ teacher.username }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus"></i>Add Student
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-list"></i>All Students</h2>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Student ID</th>
+                                <th>Name</th>
+                                <th>Grade</th>
+                                <th>Section</th>
+                                <th>Parent</th>
+                                <th>Teacher</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td>{{ student.id }}</td>
+                                <td>{{ student.student_id }}</td>
+                                <td>{{ student.name }}</td>
+                                <td>{{ student.grade }}</td>
+                                <td>{{ student.section }}</td>
+                                <td>{{ student.parent.username if student.parent else 'N/A' }}</td>
+                                <td>{{ student.teacher.username if student.teacher else 'N/A' }}</td>
+                                <td>
+                                    <form method="POST" action="/admin/delete_student/{{ student.id }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this student? This action cannot be undone.')">
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-trash"></i>Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

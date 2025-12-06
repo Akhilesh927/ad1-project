@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mark Attendance - EduTrack</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="navbar">
+            <a href="/dashboard" class="navbar-brand">
+                <i class="fas fa-graduation-cap"></i>
+                EduTrack
+            </a>
+            <ul class="navbar-nav">
+                <li><a href="/dashboard" class="nav-link"><i class="fas fa-home"></i>Dashboard</a></li>
+                <li><a href="/attendance" class="nav-link active"><i class="fas fa-calendar-check"></i>Attendance</a></li>
+                <li><a href="/grades" class="nav-link"><i class="fas fa-chart-line"></i>Grades</a></li>
+                <li><a href="/fees" class="nav-link"><i class="fas fa-indian-rupee-sign"></i>Fees</a></li>
+                <li><a href="/leave_requests" class="nav-link"><i class="fas fa-file-alt"></i>Leave Requests</a></li>
+                <li><a href="/messages" class="nav-link"><i class="fas fa-envelope"></i>Messages</a></li>
+            </ul>
+            <a href="/logout" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>Logout
+            </a>
+        </nav>
+
+        <div class="main-content">
+            <div class="dashboard-header">
+                <h1>Mark Attendance</h1>
+                <p>Update attendance for your students</p>
+            </div>
+
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-calendar-check"></i>Daily Attendance</h2>
+                    <div>
+                        <input type="date" id="attendanceDate" value="{{ selected_date }}" onchange="changeDate(this.value)">
+                    </div>
+                </div>
+                
+                {% if students %}
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Grade</th>
+                                <th>Hour 1</th>
+                                <th>Hour 2</th>
+                                <th>Hour 3</th>
+                                <th>Hour 4</th>
+                                <th>Hour 5</th>
+                                <th>Hour 6</th>
+                                <th>Hour 7</th>
+                                <th>Hour 8</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td><strong>{{ student.name }}</strong></td>
+                                <td>{{ student.grade }}-{{ student.section }}</td>
+                                {% for hour in range(1, 9) %}
+                                <td>
+                                    {% if attendance_data.get(student.id) %}
+                                        {% if hour == 1 and attendance_data[student.id].hour_1 %}
+                                            <button class="attendance-btn present" onclick="toggleAttendance({{ student.id }}, {{ hour }}, this)">✓</button>
+                                        {% elif hour == 2 and attendance_data[student.id].hour_2 %}
+                                            <button class="attendance-btn present" onclick="toggleAttendance({{ student.id }}, {{ hour }}, this)">✓</button>
+                                        {% elif hour == 3 and attendance_data[student.id].hour_3 %}
+                                            <button class="attendance-btn present" onclick="toggleAttendance({{ student.id }}, {{ hour }}, this)">✓</button>
+                                        {% elif hour == 4 and attendance_data[student.id].hour_4 %}
+                                            <button class="attendance-btn present" onclick="toggleAttendance({{ student.id }}, {{ hour }}, this)">✓</button>
+                                        {% elif hour == 5 and attendance_data[student.id].hour_5 %}
+                                            <button class="attendance-btn present" onclick="toggleAttendance({{ student.id }}, {{ hour }}, this)">✓</button>
+                                        {% elif hour == 6 and attendance_data[student.id].hour_6 %}
+                                            <button class="attendance-btn present" onclick="toggleAttendance({{ student.id }}, {{ hour }}, this)">✓</button>
+                                        {% elif hour == 7 and attendance_data[student.id].hour_7 %}
+                                            <button class="attendance-btn present" onclick="toggleAttendance({{ student.id }}, {{ hour }}, this)">✓</button>
+                                        {% elif hour == 8 and attendance_data[student.id].hour_8 %}
+                                            <button class="attendance-btn present" onclick="toggleAttendance({{ student.id }}, {{ hour }}, this)">✓</button>
+                                        {% else %}
+                                            <button class="attendance-btn absent" onclick="toggleAttendance({{ student.id }}, {{ hour }}, this)">✗</button>
+                                        {% endif %}
+                                    {% else %}
+                                        <button class="attendance-btn absent" onclick="toggleAttendance({{ student.id }}, {{ hour }}, this)">✗</button>
+                                    {% endif %}
+                                </td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="no-data">
+                    <i class="fas fa-users-slash"></i>
+                    <p>No students assigned to you.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleAttendance(studentId, hour, button) {
+            const isPresent = button.classList.contains('present');
+            const newStatus = !isPresent;
+            
+            fetch('/update_attendance', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `student_id=${studentId}&date=${document.getElementById('attendanceDate').value}&hour=${hour}&present=${newStatus}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (newStatus) {
+                        button.classList.remove('absent');
+                        button.classList.add('present');
+                        button.textContent = '✓';
+                    } else {
+                        button.classList.remove('present');
+                        button.classList.add('absent');
+                        button.textContent = '✗';
+                    }
+                } else {
+                    alert('Error updating attendance');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error updating attendance');
+            });
+        }
+
+        function changeDate(date) {
+            window.location.href = `/attendance?date=${date}`;
+        }
+    </script>
+
+    <style>
+        .attendance-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .attendance-btn.present {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .attendance-btn.absent {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .attendance-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .no-data i {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #ccc;
+        }
+    </style>
+</body>
+</html> 

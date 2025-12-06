@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Teacher - EduTrack</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="navbar">
+            <a href="/dashboard" class="navbar-brand">
+                <i class="fas fa-graduation-cap"></i>
+                EduTrack
+            </a>
+            <ul class="navbar-nav">
+                <li><a href="/dashboard" class="nav-link"><i class="fas fa-home"></i>Dashboard</a></li>
+                <li><a href="/attendance" class="nav-link"><i class="fas fa-calendar-check"></i>Attendance</a></li>
+                <li><a href="/grades" class="nav-link"><i class="fas fa-chart-line"></i>Grades</a></li>
+                <li><a href="/fees" class="nav-link"><i class="fas fa-indian-rupee-sign"></i>Fees</a></li>
+                <li><a href="/leave_requests" class="nav-link"><i class="fas fa-file-alt"></i>Leave Requests</a></li>
+                <li><a href="/contact_teacher" class="nav-link active"><i class="fas fa-envelope"></i>Contact Teacher</a></li>
+            </ul>
+            <a href="/logout" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>Logout
+            </a>
+        </nav>
+        
+        <div class="main-content">
+            <div class="chat-container">
+                <!-- Chat Header -->
+                <div class="chat-header">
+                    <div class="chat-header-info">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        <div>
+                            <h2>Chat with {{ teacher.username }}</h2>
+                            <p>Teacher for {{ student.name }} ({{ student.grade }}-{{ student.section }})</p>
+                        </div>
+                    </div>
+                    {% if students|length > 1 %}
+                    <div class="student-selector">
+                        <select name="student_id" id="student_id" onchange="changeStudent(this.value)">
+                            {% for s in students %}
+                            <option value="{{ s.id }}" {% if s.id == student.id %}selected{% endif %}>{{ s.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Chat Messages Area -->
+                <div class="chat-messages" id="chatMessages">
+                    {% if messages %}
+                        {% for msg in messages %}
+                            <div class="message-wrapper {% if msg.sender_id == student.parent_id %}sent{% else %}received{% endif %}">
+                                <div class="message-bubble">
+                                    {% if msg.sender_id != student.parent_id %}
+                                        <div class="message-sender">
+                                            <i class="fas fa-chalkboard-teacher"></i>
+                                            <span>{{ teacher.username }}</span>
+                                        </div>
+                                    {% endif %}
+                                    <div class="message-text">{{ msg.content }}</div>
+                                    <div class="message-time">{{ msg.timestamp | localtime }}</div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-messages">
+                            <i class="fas fa-comments"></i>
+                            <p>No messages yet</p>
+                            <span>Start a conversation with your child's teacher</span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Chat Input Area -->
+                <div class="chat-input-area">
+                    <form action="/contact_teacher" method="POST" class="chat-form" id="chatForm">
+                        {% if students|length > 1 %}
+                        <input type="hidden" name="student_id" value="{{ student.id }}">
+                        {% endif %}
+                        <div class="input-group">
+                            <input type="text" name="content" class="chat-input" placeholder="Type a message..." required>
+                            <button type="submit" class="send-btn">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 120px);
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-bottom: 1px solid #e1e5e9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .chat-header-info i {
+            font-size: 2rem;
+        }
+
+        .chat-header-info h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .chat-header-info p {
+            margin: 5px 0 0 0;
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .student-selector select {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .student-selector select option {
+            background: #667eea;
+            color: white;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .message-wrapper {
+            margin-bottom: 15px;
+            display: flex;
+        }
+
+        .message-wrapper.sent {
+            justify-content: flex-end;
+        }
+
+        .message-wrapper.received {
+            justify-content: flex-start;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        .message-wrapper.sent .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-wrapper.received .message-bubble {
+            background: white;
+            color: #333;
+            border: 1px solid #e1e5e9;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-sender {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .message-sender i {
+            font-size: 0.8rem;
+        }
+
+        .message-text {
+            line-height: 1.4;
+            margin-bottom: 5px;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            text-align: right;
+        }
+
+        .message-wrapper.received .message-time {
+            color: #666;
+        }
+
+        .no-messages {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .no-messages i {
+            font-size: 4rem;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+
+        .no-messages p {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .no-messages span {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .chat-input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e1e5e9;
+        }
+
+        .chat-form {
+            margin: 0;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 25px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .send-btn {
+            width: 45px;
+            height: 45px;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Scrollbar Styling */
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 3px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #5a6fd8;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .chat-container {
+                height: calc(100vh - 100px);
+                border-radius: 0;
+            }
+
+            .message-bubble {
+                max-width: 85%;
+            }
+
+            .chat-header {
+                padding: 15px;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .chat-header-info h2 {
+                font-size: 1.2rem;
+            }
+
+            .chat-messages {
+                padding: 15px;
+            }
+
+            .chat-input-area {
+                padding: 15px;
+            }
+        }
+
+        /* Animation for new messages */
+        .message-wrapper {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+
+    <script>
+        // Auto-scroll to bottom of chat
+        function scrollToBottom() {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Scroll to bottom on page load
+        window.onload = function() {
+            scrollToBottom();
+        };
+
+        // Handle form submission
+        document.getElementById('chatForm').addEventListener('submit', function(e) {
+            const input = document.querySelector('.chat-input');
+            const sendBtn = document.querySelector('.send-btn');
+            
+            if (!input.value.trim()) {
+                e.preventDefault();
+                return;
+            }
+            
+            // Disable button and show loading
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        });
+
+        // Change student function
+        function changeStudent(studentId) {
+            window.location.href = `/contact_teacher?student_id=${studentId}`;
+        }
+
+        // Auto-resize input (optional enhancement)
+        document.querySelector('.chat-input').addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+        });
+    </script>
+</body>
+</html> 

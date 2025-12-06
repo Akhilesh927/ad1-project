@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance - Student Monitoring Portal</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="navbar">
+            <a href="/dashboard" class="navbar-brand">
+                <i class="fas fa-graduation-cap"></i>
+                EduTrack
+            </a>
+            <ul class="navbar-nav">
+                <li><a href="/dashboard?student_id={{ selected_student.id }}" class="nav-link"><i class="fas fa-home"></i>Dashboard</a></li>
+                <li><a href="/attendance?student_id={{ selected_student.id }}" class="nav-link active"><i class="fas fa-calendar-check"></i>Attendance</a></li>
+                <li><a href="/grades?student_id={{ selected_student.id }}" class="nav-link"><i class="fas fa-chart-line"></i>Grades</a></li>
+                <li><a href="/fees?student_id={{ selected_student.id }}" class="nav-link"><i class="fas fa-indian-rupee-sign"></i>Fees</a></li>
+                <li><a href="/leave_requests?student_id={{ selected_student.id }}" class="nav-link"><i class="fas fa-file-alt"></i>Leave Requests</a></li>
+                <li><a href="/contact_teacher?student_id={{ selected_student.id }}" class="nav-link"><i class="fas fa-envelope"></i>Contact Teacher</a></li>
+            </ul>
+            <a href="/logout" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>Logout
+            </a>
+        </nav>
+
+        <div class="main-content">
+            <div class="dashboard-header">
+                <h1>Attendance Records</h1>
+                <p>View {{ selected_student.name }}'s attendance history</p>
+            </div>
+
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-calendar-check"></i>Monthly Attendance</h2>
+                </div>
+                
+                {% if attendance_records %}
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Hour 1</th>
+                                <th>Hour 2</th>
+                                <th>Hour 3</th>
+                                <th>Hour 4</th>
+                                <th>Hour 5</th>
+                                <th>Hour 6</th>
+                                <th>Hour 7</th>
+                                <th>Hour 8</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in attendance_records %}
+                            <tr>
+                                <td>{{ record.date.strftime('%Y-%m-%d') }}</td>
+                                <td class="{{ 'attendance-present' if record.hour_1 else 'attendance-absent' }}">
+                                    {{ '✓' if record.hour_1 else '✗' }}
+                                </td>
+                                <td class="{{ 'attendance-present' if record.hour_2 else 'attendance-absent' }}">
+                                    {{ '✓' if record.hour_2 else '✗' }}
+                                </td>
+                                <td class="{{ 'attendance-present' if record.hour_3 else 'attendance-absent' }}">
+                                    {{ '✓' if record.hour_3 else '✗' }}
+                                </td>
+                                <td class="{{ 'attendance-present' if record.hour_4 else 'attendance-absent' }}">
+                                    {{ '✓' if record.hour_4 else '✗' }}
+                                </td>
+                                <td class="{{ 'attendance-present' if record.hour_5 else 'attendance-absent' }}">
+                                    {{ '✓' if record.hour_5 else '✗' }}
+                                </td>
+                                <td class="{{ 'attendance-present' if record.hour_6 else 'attendance-absent' }}">
+                                    {{ '✓' if record.hour_6 else '✗' }}
+                                </td>
+                                <td class="{{ 'attendance-present' if record.hour_7 else 'attendance-absent' }}">
+                                    {{ '✓' if record.hour_7 else '✗' }}
+                                </td>
+                                <td class="{{ 'attendance-present' if record.hour_8 else 'attendance-absent' }}">
+                                    {{ '✓' if record.hour_8 else '✗' }}
+                                </td>
+                                <td>
+                                    <strong>
+                                        {{ [record.hour_1, record.hour_2, record.hour_3, record.hour_4, 
+                                            record.hour_5, record.hour_6, record.hour_7, record.hour_8]|select|list|length }}/8
+                                    </strong>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="no-data">
+                    <i class="fas fa-calendar-times"></i>
+                    <p>No attendance records found for this month.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .no-data i {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #ccc;
+        }
+        
+        .attendance-present {
+            background: #d4edda;
+            color: #155724;
+            font-weight: bold;
+        }
+        
+        .attendance-absent {
+            background: #f8d7da;
+            color: #721c24;
+            font-weight: bold;
+        }
+    </style>
+</body>
+</html> 

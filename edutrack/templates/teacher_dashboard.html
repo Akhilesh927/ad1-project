@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard - EduTrack</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <a href="/dashboard" class="navbar-brand">
+                <i class="fas fa-graduation-cap"></i>
+                EduTrack
+            </a>
+            <ul class="navbar-nav">
+                <li><a href="/dashboard" class="nav-link active"><i class="fas fa-home"></i>Dashboard</a></li>
+                <li><a href="/attendance" class="nav-link"><i class="fas fa-calendar-check"></i>Attendance</a></li>
+                <li><a href="/grades" class="nav-link"><i class="fas fa-chart-line"></i>Grades</a></li>
+                <li><a href="/fees" class="nav-link"><i class="fas fa-indian-rupee-sign"></i>Fees</a></li>
+                <li><a href="/leave_requests" class="nav-link"><i class="fas fa-file-alt"></i>Leave Requests</a></li>
+                <li><a href="/messages" class="nav-link"><i class="fas fa-envelope"></i>Messages</a></li>
+            </ul>
+            <a href="/logout" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>Logout
+            </a>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Dashboard Header -->
+            <div class="dashboard-header">
+                <h1>Welcome, {{ session.username }}!</h1>
+                <p>Manage your students' academic progress and school activities</p>
+            </div>
+
+            <!-- Statistics Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <i class="fas fa-users"></i>
+                    <h3>{{ students|length }}</h3>
+                    <p>Total Students</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-file-alt"></i>
+                    <h3>{{ pending_leaves|length }}</h3>
+                    <p>Pending Leave Requests</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-calendar-check"></i>
+                    <h3>Today</h3>
+                    <p>Attendance Due</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Update</h3>
+                    <p>Grades & Fees</p>
+                </div>
+            </div>
+
+            <!-- Student List -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-users"></i>My Students</h2>
+                </div>
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Name</th>
+                                <th>Grade</th>
+                                <th>Section</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td>{{ student.student_id }}</td>
+                                <td><strong>{{ student.name }}</strong></td>
+                                <td>{{ student.grade }}</td>
+                                <td>{{ student.section }}</td>
+                                <td>
+                                    <a href="/attendance" class="btn btn-primary btn-sm">Attendance</a>
+                                    <a href="/grades" class="btn btn-primary btn-sm">Grades</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Pending Leave Requests -->
+            {% if pending_leaves %}
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-file-alt"></i>Pending Leave Requests</h2>
+                    <a href="/leave_requests" class="btn btn-primary">View All</a>
+                </div>
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Type</th>
+                                <th>From</th>
+                                <th>To</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for leave in pending_leaves %}
+                            <tr>
+                                <td>{{ leave.student_id }}</td>
+                                <td>{{ leave.leave_type.title() }}</td>
+                                <td>{{ leave.start_date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ leave.end_date.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    <form action="/update_leave_status" method="POST" style="display: inline;">
+                                        <input type="hidden" name="leave_id" value="{{ leave.id }}">
+                                        <input type="hidden" name="status" value="approved">
+                                        <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                                    </form>
+                                    <form action="/update_leave_status" method="POST" style="display: inline;">
+                                        <input type="hidden" name="leave_id" value="{{ leave.id }}">
+                                        <input type="hidden" name="status" value="rejected">
+                                        <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recent Messages -->
+            {% if recent_messages %}
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-envelope"></i>Recent Messages</h2>
+                    <a href="/messages" class="btn btn-primary">View All</a>
+                </div>
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>From</th>
+                                <th>Student</th>
+                                <th>Message</th>
+                                <th>Time</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for msg in recent_messages %}
+                            <tr>
+                                <td><strong>{{ msg.parent_name }}</strong></td>
+                                <td>{{ msg.student_name }}</td>
+                                <td>{{ msg.content[:50] }}{% if msg.content|length > 50 %}...{% endif %}</td>
+                                <td>{{ msg.timestamp.strftime('%Y-%m-%d') }} {{ msg.timestamp | localtime }}</td>
+                                <td>
+                                    <a href="/messages" class="btn btn-primary btn-sm">Reply</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Quick Actions -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-bolt"></i>Quick Actions</h2>
+                </div>
+                <div class="form-row">
+                    <a href="/attendance" class="btn btn-primary">
+                        <i class="fas fa-calendar-check"></i>Mark Attendance
+                    </a>
+                    <a href="/grades" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>Add Grades
+                    </a>
+                    <a href="/fees" class="btn btn-primary">
+                        <i class="fas fa-indian-rupee-sign"></i>Manage Fees
+                    </a>
+                    <a href="/messages" class="btn btn-primary">
+                        <i class="fas fa-envelope"></i>Messages
+                    </a>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-history"></i>Recent Activity</h2>
+                </div>
+                <div class="form-row">
+                    <div class="activity-item">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Mark attendance for all students</span>
+                    </div>
+                    <div class="activity-item">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Update grades for recent assignments</span>
+                    </div>
+                    <div class="activity-item">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Review pending leave requests</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leave Approval Modal -->
+    <div id="leaveModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Update Leave Request</h3>
+                <span class="close">&times;</span>
+            </div>
+            <form id="leaveForm" action="/update_leave_status" method="POST">
+                <input type="hidden" id="leaveId" name="leave_id">
+                <input type="hidden" id="leaveStatus" name="status">
+                
+                <div class="form-group">
+                    <label for="comment">Comment (Optional):</label>
+                    <textarea id="comment" name="comment" class="form-control" rows="3"></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="button" class="btn btn-danger" onclick="closeModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function approveLeave(leaveId) {
+            document.getElementById('leaveId').value = leaveId;
+            document.getElementById('leaveStatus').value = 'approved';
+            document.getElementById('leaveModal').style.display = 'block';
+        }
+
+        function rejectLeave(leaveId) {
+            document.getElementById('leaveId').value = leaveId;
+            document.getElementById('leaveStatus').value = 'rejected';
+            document.getElementById('leaveModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('leaveModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('leaveModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Close modal when clicking X
+        document.querySelector('.close').onclick = function() {
+            closeModal();
+        }
+    </script>
+
+    <style>
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 500px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .activity-item i {
+            color: #667eea;
+            font-size: 1.2rem;
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+        }
+    </style>
+</body>
+</html> 

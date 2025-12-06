@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parent Dashboard - EduTrack</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <a href="/dashboard?student_id={{ selected_student.id }}" class="navbar-brand">
+                <i class="fas fa-graduation-cap"></i>
+                EduTrack
+            </a>
+            <ul class="navbar-nav">
+                <li><a href="/dashboard?student_id={{ selected_student.id }}" class="nav-link active"><i class="fas fa-home"></i>Dashboard</a></li>
+                <li><a href="/attendance?student_id={{ selected_student.id }}" class="nav-link"><i class="fas fa-calendar-check"></i>Attendance</a></li>
+                <li><a href="/grades?student_id={{ selected_student.id }}" class="nav-link"><i class="fas fa-chart-line"></i>Grades</a></li>
+                <li><a href="/fees?student_id={{ selected_student.id }}" class="nav-link"><i class="fas fa-indian-rupee-sign"></i>Fees</a></li>
+                <li><a href="/leave_requests?student_id={{ selected_student.id }}" class="nav-link"><i class="fas fa-file-alt"></i>Leave Requests</a></li>
+                <li><a href="/contact_teacher?student_id={{ selected_student.id }}" class="nav-link"><i class="fas fa-envelope"></i>Contact Teacher</a></li>
+            </ul>
+            <a href="/logout" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>Logout
+            </a>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Dashboard Header -->
+            <div class="dashboard-header">
+                <h1>Welcome, {{ session.username }}!</h1>
+                <p>Monitor your child's academic progress and school activities</p>
+            </div>
+
+            <!-- Student Selection Form -->
+            {% if students|length > 1 %}
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-users"></i>Select Student</h2>
+                </div>
+                <form method="get" action="/dashboard" class="form-row" style="gap: 20px; align-items: center;">
+                    {% for s in students %}
+                    <label style="font-weight: 500;">
+                        <input type="radio" name="student_id" value="{{ s.id }}" {% if s.id == selected_student.id %}checked{% endif %}>
+                        {{ s.name }} ({{ s.student_id }})
+                    </label>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary" style="margin-left: 20px;">Enter</button>
+                </form>
+            </div>
+            {% endif %}
+
+            <!-- Student Information -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-user-graduate"></i>Student Information</h2>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <strong>Name:</strong> {{ selected_student.name }}
+                    </div>
+                    <div>
+                        <strong>Student ID:</strong> {{ selected_student.student_id }}
+                    </div>
+                    <div>
+                        <strong>Grade:</strong> {{ selected_student.grade }} - {{ selected_student.section }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions for this student -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-bolt"></i>Quick Actions for {{ selected_student.name }}</h2>
+                </div>
+                <div class="form-row">
+                    <a href="/leave_requests?student_id={{ selected_student.id }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>Submit Leave Request
+                    </a>
+                    <a href="/contact_teacher?student_id={{ selected_student.id }}" class="btn btn-primary">
+                        <i class="fas fa-envelope"></i>Contact Teacher
+                    </a>
+                    <a href="/attendance?student_id={{ selected_student.id }}" class="btn btn-primary">
+                        <i class="fas fa-calendar"></i>View Attendance History
+                    </a>
+                    <a href="/grades?student_id={{ selected_student.id }}" class="btn btn-primary">
+                        <i class="fas fa-chart-bar"></i>View All Grades
+                    </a>
+                </div>
+            </div>
+
+            <!-- Statistics Grid for this student -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <i class="fas fa-calendar-check"></i>
+                    <h3>{{ "Present" if attendance else "Absent" }}</h3>
+                    <p>Today's Attendance</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>{{ grades|length }}</h3>
+                    <p>Recent Grades</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-indian-rupee-sign"></i>
+                    <h3>{{ fees|length }}</h3>
+                    <p>Pending Fees</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-file-alt"></i>
+                    <h3>{{ leave_requests|length }}</h3>
+                    <p>Leave Requests</p>
+                </div>
+            </div>
+
+            <!-- Today's Attendance for this student -->
+            {% if attendance %}
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-calendar-check"></i>Today's Attendance</h2>
+                </div>
+                <div class="attendance-grid">
+                    <div class="attendance-hour {{ 'attendance-present' if attendance.hour_1 else 'attendance-absent' }}">
+                        Hour 1
+                    </div>
+                    <div class="attendance-hour {{ 'attendance-present' if attendance.hour_2 else 'attendance-absent' }}">
+                        Hour 2
+                    </div>
+                    <div class="attendance-hour {{ 'attendance-present' if attendance.hour_3 else 'attendance-absent' }}">
+                        Hour 3
+                    </div>
+                    <div class="attendance-hour {{ 'attendance-present' if attendance.hour_4 else 'attendance-absent' }}">
+                        Hour 4
+                    </div>
+                    <div class="attendance-hour {{ 'attendance-present' if attendance.hour_5 else 'attendance-absent' }}">
+                        Hour 5
+                    </div>
+                    <div class="attendance-hour {{ 'attendance-present' if attendance.hour_6 else 'attendance-absent' }}">
+                        Hour 6
+                    </div>
+                    <div class="attendance-hour {{ 'attendance-present' if attendance.hour_7 else 'attendance-absent' }}">
+                        Hour 7
+                    </div>
+                    <div class="attendance-hour {{ 'attendance-present' if attendance.hour_8 else 'attendance-absent' }}">
+                        Hour 8
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recent Grades for this student -->
+            {% if grades %}
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-chart-line"></i>Recent Grades</h2>
+                    <a href="/grades?student_id={{ selected_student.id }}" class="btn btn-primary">View All</a>
+                </div>
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Grade</th>
+                                <th>Marks</th>
+                                <th>Semester</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for grade in grades %}
+                            <tr>
+                                <td>{{ grade.subject }}</td>
+                                <td><strong>{{ grade.grade }}</strong></td>
+                                <td>{{ grade.marks or 'N/A' }}</td>
+                                <td>{{ grade.semester }}</td>
+                                <td>{{ grade.created_at.strftime('%Y-%m-%d') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Pending Fees for this student -->
+            {% if fees %}
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-indian-rupee-sign"></i>Pending Fees</h2>
+                    <a href="/fees?student_id={{ selected_student.id }}" class="btn btn-primary">View All</a>
+                </div>
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Fee Type</th>
+                                <th>Amount</th>
+                                <th>Due Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for fee in fees %}
+                            <tr>
+                                <td>{{ fee.fee_type }}</td>
+                                <td>₹{{ "%.2f"|format(fee.amount) }}</td>
+                                <td>{{ fee.due_date.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    <span class="status-badge status-pending">Pending</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recent Leave Requests for this student -->
+            {% if leave_requests %}
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-file-alt"></i>Recent Leave Requests</h2>
+                    <a href="/leave_requests?student_id={{ selected_student.id }}" class="btn btn-primary">View All</a>
+                </div>
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>From</th>
+                                <th>To</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for leave in leave_requests[:5] %}
+                            <tr>
+                                <td>{{ leave.leave_type.title() }}</td>
+                                <td>{{ leave.start_date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ leave.end_date.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    <span class="status-badge status-{{ leave.status }}">
+                                        {{ leave.status.title() }}
+                                    </span>
+                                </td>
+                                <td>{{ leave.created_at.strftime('%Y-%m-%d') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+            <hr>
+        </div>
+    </div>
+</body>
+</html> 

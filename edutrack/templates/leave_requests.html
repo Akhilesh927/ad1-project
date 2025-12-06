@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave Requests - EduTrack</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="navbar">
+            <a href="/dashboard" class="navbar-brand">
+                <i class="fas fa-graduation-cap"></i>
+                EduTrack
+            </a>
+            <ul class="navbar-nav">
+                <li><a href="/dashboard?student_id={{ selected_student.id }}" class="nav-link"><i class="fas fa-home"></i>Dashboard</a></li>
+                <li><a href="/attendance?student_id={{ selected_student.id }}" class="nav-link"><i class="fas fa-calendar-check"></i>Attendance</a></li>
+                <li><a href="/grades?student_id={{ selected_student.id }}" class="nav-link"><i class="fas fa-chart-line"></i>Grades</a></li>
+                <li><a href="/fees?student_id={{ selected_student.id }}" class="nav-link"><i class="fas fa-indian-rupee-sign"></i>Fees</a></li>
+                <li><a href="/leave_requests?student_id={{ selected_student.id }}" class="nav-link active"><i class="fas fa-file-alt"></i>Leave Requests</a></li>
+                <li><a href="/contact_teacher?student_id={{ selected_student.id }}" class="nav-link"><i class="fas fa-envelope"></i>Contact Teacher</a></li>
+            </ul>
+            <a href="/logout" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>Logout
+            </a>
+        </nav>
+
+        <div class="main-content">
+            <div class="dashboard-header">
+                <h1>Leave Requests</h1>
+                <p>Submit and track leave requests for {{ selected_student.name }}</p>
+            </div>
+
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-plus"></i>Submit New Leave Request</h2>
+                </div>
+                
+                <form action="/submit_leave_request" method="POST" class="form-container">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="leave_type">Leave Type:</label>
+                            <select name="leave_type" id="leave_type" class="form-control" required>
+                                <option value="">Select Leave Type</option>
+                                <option value="sick">Sick Leave</option>
+                                <option value="personal">Personal Leave</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="start_date">Start Date:</label>
+                            <input type="date" name="start_date" id="start_date" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="end_date">End Date:</label>
+                            <input type="date" name="end_date" id="end_date" class="form-control" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="reason">Reason:</label>
+                        <textarea name="reason" id="reason" class="form-control" rows="4" required placeholder="Please provide a detailed reason for the leave request..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i>Submit Request
+                    </button>
+                </form>
+            </div>
+
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-history"></i>Leave Request History</h2>
+                </div>
+                
+                {% if leave_requests %}
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>From</th>
+                                <th>To</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                                <th>Teacher Comment</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for leave in leave_requests %}
+                            <tr>
+                                <td>{{ leave.leave_type.title() }}</td>
+                                <td>{{ leave.start_date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ leave.end_date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ leave.reason[:50] }}{% if leave.reason|length > 50 %}...{% endif %}</td>
+                                <td>
+                                    <span class="status-badge status-{{ leave.status }}">
+                                        {{ leave.status.title() }}
+                                    </span>
+                                </td>
+                                <td>{{ leave.teacher_comment or 'No comment' }}</td>
+                                <td>{{ leave.created_at.strftime('%Y-%m-%d') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="no-data">
+                    <i class="fas fa-file-alt"></i>
+                    <p>No leave requests found.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+</body>
+</html> 

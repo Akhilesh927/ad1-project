@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grades - EduTrack</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="navbar">
+            <a href="/dashboard" class="navbar-brand">
+                <i class="fas fa-graduation-cap"></i>
+                EduTrack
+            </a>
+            <ul class="navbar-nav">
+                <li><a href="/dashboard?student_id={{ selected_student.id }}" class="nav-link"><i class="fas fa-home"></i>Dashboard</a></li>
+                <li><a href="/attendance?student_id={{ selected_student.id }}" class="nav-link"><i class="fas fa-calendar-check"></i>Attendance</a></li>
+                <li><a href="/grades?student_id={{ selected_student.id }}" class="nav-link active"><i class="fas fa-chart-line"></i>Grades</a></li>
+                <li><a href="/fees?student_id={{ selected_student.id }}" class="nav-link"><i class="fas fa-indian-rupee-sign"></i>Fees</a></li>
+                <li><a href="/leave_requests?student_id={{ selected_student.id }}" class="nav-link"><i class="fas fa-file-alt"></i>Leave Requests</a></li>
+                <li><a href="/contact_teacher?student_id={{ selected_student.id }}" class="nav-link"><i class="fas fa-envelope"></i>Contact Teacher</a></li>
+            </ul>
+            <a href="/logout" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>Logout
+            </a>
+        </nav>
+
+        <div class="main-content">
+            <div class="dashboard-header">
+                <h1>Academic Grades</h1>
+                <p>{{ selected_student.name }}'s academic performance</p>
+            </div>
+
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-chart-line"></i>Grade History</h2>
+                </div>
+                
+                {% if grades %}
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Status</th>
+                                <th>Marks</th>
+                                <th>Semester</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for grade in grades %}
+                            <tr>
+                                <td>{{ grade.subject }}</td>
+                                <td><strong>{% if grade.marks is not none and grade.marks|int >= 35 %}Pass{% else %}Fail{% endif %}</strong></td>
+                                <td>{{ grade.marks or 'N/A' }}</td>
+                                <td>{{ grade.semester }}</td>
+                                <td>{{ grade.created_at.strftime('%Y-%m-%d') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="no-data">
+                    <i class="fas fa-chart-line"></i>
+                    <p>No grades available yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

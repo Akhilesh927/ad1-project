@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - EduTrack</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="navbar">
+            <a href="/admin" class="navbar-brand">
+                <i class="fas fa-graduation-cap"></i>
+                EduTrack - Admin
+            </a>
+            <ul class="navbar-nav">
+                <li><a href="/admin" class="nav-link active"><i class="fas fa-home"></i>Dashboard</a></li>
+                <li><a href="/admin/users" class="nav-link"><i class="fas fa-users"></i>Users</a></li>
+                <li><a href="/admin/students" class="nav-link"><i class="fas fa-user-graduate"></i>Students</a></li>
+                <li><a href="/admin/credentials" class="nav-link"><i class="fas fa-key"></i>Credentials</a></li>
+            </ul>
+            <a href="/logout" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>Logout
+            </a>
+        </nav>
+
+        <div class="main-content">
+            <div class="dashboard-header">
+                <h1>Admin Dashboard</h1>
+                <p>Manage the entire school monitoring system</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <i class="fas fa-user-graduate"></i>
+                    <h3>{{ total_students }}</h3>
+                    <p>Total Students</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <h3>{{ total_teachers }}</h3>
+                    <p>Total Teachers</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-users"></i>
+                    <h3>{{ total_parents }}</h3>
+                    <p>Total Parents</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-calendar-check"></i>
+                    <h3>{{ total_attendance_records }}</h3>
+                    <p>Attendance Records</p>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-cogs"></i>Quick Actions</h2>
+                </div>
+                <div class="form-row">
+                    <a href="/admin/users" class="btn btn-primary">
+                        <i class="fas fa-users"></i>Manage Users
+                    </a>
+                    <a href="/admin/students" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i>Manage Students
+                    </a>
+                    <a href="/admin/credentials" class="btn btn-primary">
+                        <i class="fas fa-key"></i>View Credentials
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 
